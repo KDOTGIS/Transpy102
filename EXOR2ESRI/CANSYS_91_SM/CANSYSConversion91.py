@@ -1,7 +1,7 @@
 '''
 this script has to run in an ArcGIS 9.1 computer with older version of python and pywin
 @kyle g
-'''
+
 
 """********************************************************************************************************************
 FeatureClassConversion.py converted to work on a hard coded list of layers
@@ -30,7 +30,7 @@ Updated: 6/02/2005 (use gp.GetParameterAsText as opposed to sys.argv)
 Usage: FeatureClassToGeodatabase <in_feature_class;in_feature_class...> <out_workspace>
 Usage: FeatureClassToShapefile <in_feature_class;in_feature_class...> <out_folder>
 *********************************************************************************************************************"""
-
+'''
 import ConversionUtils, sys, os, time, win32com.client
 
 #Define message constants so they may be translated easily
