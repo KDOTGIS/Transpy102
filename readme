@@ -13,3 +13,6 @@ CANSYS - These scripts operate in the ArcPY modules of ArcGIS 10.1 or 10.2.
 	ITEMS - processes the ITEMS from EXOR into ESRI feature classes
 		DOMAINS - converts EXOR domains to ESRI Geodatabase domains
 	DISTRIBUTE - Copies the extracted, transformed files and loads them into dev, test, or production data environments
+	
+CANSYS 9.1 - this script runs through a toolbox in ArcGIS 9.1 EXOR Spatial Manager Extension
+	an example ArcGIS 9.1 MXD is included.  
