@@ -1,1 +1,15 @@
 readme on my local drive,  in user folder
+EXOR TO ESRI 
+This project contains python scripts to extract GIS data from EXOR Highways 4.4.?? using Exor Spatial
+Manager in ArcGIS 9.1, along with an oracle View or Materialized View of the Unique, Primary Routes with 
+GIS-LRS KEY, EXOR ROUTE GROUP KEY, and begin/end mile fields.  
+
+CANSYS - These scripts operate in the ArcPY modules of ArcGIS 10.1 or 10.2.  
+	Main - this is the main script to create the GIS networks
+		ENV -  this is the variables/classes for the processing environment
+		LRS_CRND_SRND - calibrates the GIS Network Routes to match Measures from EXOR using calibration points
+		LRS_PRECISION_SDO - calibrates the GIS network routes ot match measures for Geomedia, wich does not recognize/interpolate measures
+		LRS_VIDEOLOG - calibrates the Videolog Lane GPS traces to the County Mile Calibration Points to match 
+	ITEMS - processes the ITEMS from EXOR into ESRI feature classes
+		DOMAINS - converts EXOR domains to ESRI Geodatabase domains
+	DISTRIBUTE - Copies the extracted, transformed files and loads them into dev, test, or production data environments
