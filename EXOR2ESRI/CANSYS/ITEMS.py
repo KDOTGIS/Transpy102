@@ -21,7 +21,7 @@ fixlist = ["INTR", "INTC", "FUN", "CITY"]
     
 import arcpy
 
-from ENV import ws, tempmdb, tempgdb
+from ENV import ws, tempmdb, tempgdb, nowish
 mxd = arcpy.mapping.MapDocument(r"\\GISDATA\ArcGIS\GISDATA\MXD\GP_LNCL_INTR.mxd")
 arcpy.env.MResolution = 0.001
 arcpy.env.MTolerance = 0.0001  # set the M tolerance below the default 
@@ -90,8 +90,7 @@ for lyr in lyrlist:
     lyrin = lyr+"_ITEM"#    
     arcpy.FeatureClassToFeatureClass_conversion(lyrin, ws+"\\"+tempgdb,lyr) #23 sec
 
-from DateTime import datestr
-mxdout = r"\\GISDATA\ArcGIS\GISDATA\MXD\GP_LNCL_INTR"+datestr+".mxd"
+mxdout = r"\\GISDATA\ArcGIS\GISDATA\MXD\GP_LNCL_INTR"+nowish+".mxd"
 mxd.saveACopy(mxdout)
 del mxd
 

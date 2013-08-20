@@ -48,7 +48,7 @@ arcpy.MakeFeatureLayer_management(ws+"\\"+tempgdb+"\\STATE_SYSTEM","STATE_SYSTEM
 import LRS_CRND_SRND
 import LRS_PRECISION_SDO
 import LRS_VIDEOLOG
-import CANSYS_ItemExtract
+import ITEMS
 
 #import MoveNet2Dev
 mxdcopy = r"\\GISDATA\ArcGIS\GISDATA\MXD\NewGISNetwork"+nowish+".mxd"
