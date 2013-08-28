@@ -14,6 +14,10 @@ conns = r'\\gisdata\arcgis\GISdata\Layers\connection_files'
 ArcVersion = '10.2'
 DCL = apd + r'\\ESRI\\Desktop'+ArcVersion+'\\ArcCatalog'
 
+##################################################################
+#####Define the function that creates a point layer from X, Y coordinates in event table ######
+##################################################################
+
 def XYFC(source, dst, Lat, Long, GCS, loaded):
     if arcpy.Exists("FCtbl"):
         arcpy.Delete_management("FCtbl")
@@ -31,6 +35,9 @@ def XYFC(source, dst, Lat, Long, GCS, loaded):
     arcpy.CalculateField_management(dst, loaded,"datetime.datetime.now( )","PYTHON_9.3","#")
     print "XYFC complete for " +str(dst)+ " at " + str(datetime.datetime.now())
 
+############################################################################
+#class object for CIIMS loader into SDEDev from SDEDEV view into CANSYS 
+############################################################################
 
 class CIIMSDev(object):
     srcdb =r'sdedev_ciims.sde'
@@ -56,6 +63,39 @@ class CIIMSDev(object):
       
     GCS = "GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision"
     XYFC(source, dst, Lat, Long, GCS, loaded)
+    
+############################################################################
+#class object for CIIMS loader into SDEDev from SDEDEV view into CANSYS 
+############################################################################
+
+class CIIMSProd(object):
+    srcdb =r'sdeprod_CIIMS.sde'
+    if arcpy.Exists(r'Database Connections/'+srcdb):
+        pass 
+    else:
+        shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
+    srcschema = 'CIIMS'
+    srctbl ='CIIMS_VWCROSSINGGIS3'
+    source = r'Database Connections/'+srcdb +'/'+srcschema+'.'+srctbl
+    Lat = "CROSSINGLATITUDE"
+    Long = "CROSSINGLONGITUDE"
+    loaded = "LOADDATE"
+    dstdb = r'sdeprod_CIIMS.sde'
+    if arcpy.Exists(r'Database Connections/'+dstdb):
+        pass
+    else:
+        shutil.copy(conns+"/"+dstdb, DCL+"/"+dstdb)
+    dstschema = 'CIIMS'
+    dstfd = 'CIIMS'
+    dstfc = 'Static_Crossings'
+    dst = r'Database Connections/'+dstdb+'/'+dstschema+'.'+dstfd+'/'+dstschema+'.'+dstfc
+      
+    GCS = "GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision"
+    XYFC(source, dst, Lat, Long, GCS, loaded)    
+    
+############################################################################
+#class object for ACCESS Points loader into GISTest from AtlasPRD materialized view
+############################################################################
 
 class ACCESSPERMDev(object):
     print "access permit points: GO "+ str(datetime.datetime.now())
