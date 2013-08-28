@@ -12,7 +12,7 @@ import arcpy, datetime, os, shutil
 now = datetime.datetime.now()
 apd = os.getenv('APPDATA')
 conns = r'\\gisdata\arcgis\GISdata\Layers\connection_files'
-ArcVersion = '10.2'
+ArcVersion = '10.1'
 DCL = apd + r'\\ESRI\\Desktop'+ArcVersion+'\\ArcCatalog'
 
 ##################################################################
