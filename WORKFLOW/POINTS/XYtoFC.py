@@ -1,6 +1,7 @@
 '''
 Created on Aug 21, 2013
-
+references database connections at \\gisdata\arcgis\GISdata\Layers\connection_files
+make sure these sde connection files have the passwords stored.
 @author: kyleg
 '''
 
