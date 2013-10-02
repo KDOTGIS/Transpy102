@@ -9,7 +9,7 @@ make sure these sde connection files have the passwords stored.
 if __name__ == '__main__':
     pass
 import datetime, os, shutil
-from arcpy import Exists, Delete_management, MakeTableView_management, MakeXYEventLayer_management, CalculateField_management, Append_management, TruncateTable_management, DisconnectUser
+from arcpy import Exists, Delete_management, MakeTableView_management, MakeXYEventLayer_management, CalculateField_management, Append_management, TruncateTable_management
 #mxd = arcpy.mapping.MapDocument(r'\\gisdata\arcgis\GISdata\MXD\CIIMS_PROCESS_DEV.mxd')
 now = datetime.datetime.now()
 apd = os.getenv('APPDATA')
