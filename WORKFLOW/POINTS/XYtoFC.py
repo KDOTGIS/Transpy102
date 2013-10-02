@@ -9,12 +9,12 @@ make sure these sde connection files have the passwords stored.
 if __name__ == '__main__':
     pass
 import datetime, os, shutil
-from arcpy import Exists, Delete_management, MakeTableView_management, MakeXYEventLayer_management, CalculateField_management, Append_management, TruncateTable_management
+from arcpy import Exists, Delete_management, MakeTableView_management, MakeXYEventLayer_management, CalculateField_management, Append_management, TruncateTable_management, DisconnectUser
 #mxd = arcpy.mapping.MapDocument(r'\\gisdata\arcgis\GISdata\MXD\CIIMS_PROCESS_DEV.mxd')
 now = datetime.datetime.now()
 apd = os.getenv('APPDATA')
 conns = r'\\gisdata\arcgis\GISdata\Layers\connection_files'
-ArcVersion = '10.1'
+ArcVersion = '10.2'
 DCL = apd + r'\\ESRI\\Desktop'+ArcVersion+'\\ArcCatalog'
 
 ##################################################################
@@ -44,10 +44,11 @@ def XYFC(source, dst, Lat, Long, GCS, loaded):
 
 class CIIMSDev(object):
     srcdb =r'sdedev_ciims.sde'
+
     if Exists(r'Database Connections/'+srcdb):
-        pass 
-    else:
-        shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
+        Delete_management(DCL+r'\\Database Connections\\'+srcdb)
+       
+    shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
     srcschema = 'CIIMS'
     srctbl ='CIIMS_VWCROSSINGGIS3'
     source = r'Database Connections/'+srcdb +'/'+srcschema+'.'+srctbl
@@ -74,9 +75,8 @@ class CIIMSDev(object):
 class CIIMSProd(object):
     srcdb =r'sdeprod_CIIMS.sde'
     if Exists(r'Database Connections/'+srcdb):
-        pass 
-    else:
-        shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
+        Delete_management(DCL+r'\\Database Connections\\'+srcdb)
+    shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
     srcschema = 'CIIMS'
     srctbl ='CIIMS_VWCROSSINGGIS3'
     source = r'Database Connections/'+srcdb +'/'+srcschema+'.'+srctbl
@@ -104,11 +104,8 @@ class ACCESSPERMDev(object):
     print "access permit points: GO "+ str(datetime.datetime.now())
     srcdb =r'ATLASPROD.odc'
     if Exists(r'Database Connections/'+srcdb):
-        print srcdb +" exists"
-        pass 
-    else:
-        shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
-        pass
+        Delete_management(DCL+r'\\Database Connections\\'+srcdb)
+    shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
     srcschema = 'KDOT'
     srctbl ='KGATE_ACCESSPOINTS_TEST'
     source = r'Database Connections/'+srcdb +'/'+srcschema+'.'+srctbl
