@@ -8,43 +8,40 @@ import datetime, arcpy
 now = datetime.datetime.now()
 
 
-class ENV(object):
-    
+class ENV(object): 
     
     '''
     classdocs
-    '''
-    
-class now(object):   
+    '''    
+class nowish(str):
     now = datetime.datetime.now()
-    
-class nowish(object):
     nowish = str(now.year)+"_"+str(now.month)+"_"+str(now.day)
     
 class ws(object): 
     ws = r'\\gisdata\arcgis\GISdata\KDOT\BTP\CANSYSTEST'
-    arcpy.env.overwriteOutput= True
-class tempgdb(object):
+    
+class tempgdb(str):
+    now = datetime.datetime.now()
     tempgdb = "CANSYSNet"+str(now.year)+"_"+str(now.month)+"_"+str(now.day)+".gdb"
     try:
         arcpy.CreateFileGDB_management(ws,tempgdb)
         print 'created temp gdb '+ ws, tempgdb
+        pass
     except:
         print 'temp gdb already exists for today'
-        pass
-    arcpy.env.workspace = ws+"\\"+tempgdb
+    arcpy.env.workspace = str(ws)+"/"+str(tempgdb)
 
-class tempmdb(object):
+class tempmdb(str):
     tempmdb = "CANSYSNet"+str(now.year)+"_"+str(now.month)+"_"+str(now.day)+".gdb"
     try:
         arcpy.CreatePersonalGDB_management(ws,tempmdb,"9.1")
         print 'created temp mdb '+ ws, tempmdb
-    except Exception:
-        print "not creating - already there"
         pass
-    arcpy.env.workspace = ws+"\\"+tempmdb  
+    except Exception:
+        print "not creating 9.1 mdb - already there"
+    arcpy.env.workspace = str(ws)+"/"+str(tempmdb)
 
-class TempDB(object):
+class TempDB(str):
     tempmdb = "CANSYSNet2013_7_29.mdb"
     tempgdb = "CANSYSNet2013_7_29.gdb"
     

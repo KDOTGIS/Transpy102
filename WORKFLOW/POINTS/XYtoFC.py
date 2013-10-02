@@ -4,10 +4,12 @@ references database connections at \\gisdata\arcgis\GISdata\Layers\connection_fi
 make sure these sde connection files have the passwords stored.
 @author: kyleg
 '''
+#import arcpy
 
 if __name__ == '__main__':
     pass
-import arcpy, datetime, os, shutil
+import datetime, os, shutil
+from arcpy import Exists, Delete_management, MakeTableView_management, MakeXYEventLayer_management, CalculateField_management, Append_management, TruncateTable_management
 #mxd = arcpy.mapping.MapDocument(r'\\gisdata\arcgis\GISdata\MXD\CIIMS_PROCESS_DEV.mxd')
 now = datetime.datetime.now()
 apd = os.getenv('APPDATA')
@@ -20,20 +22,20 @@ DCL = apd + r'\\ESRI\\Desktop'+ArcVersion+'\\ArcCatalog'
 ##################################################################
 
 def XYFC(source, dst, Lat, Long, GCS, loaded):
-    if arcpy.Exists("FCtbl"):
-        arcpy.Delete_management("FCtbl")
+    if Exists("FCtbl"):
+        Delete_management("FCtbl")
     else:    
         pass
-    if arcpy.Exists("FC_Layer"):
-        arcpy.Delete_management("FC_Layer")
+    if Exists("FC_Layer"):
+        Delete_management("FC_Layer")
     else:
         pass
     print "start XYFC "+ str(datetime.datetime.now())
-    arcpy.MakeTableView_management(source, 'FCtbl', "#", "#", "")
-    arcpy.MakeXYEventLayer_management("FCtbl",Long, Lat,"FC_Layer", GCS,"#")
-    arcpy.DeleteFeatures_management(dst)
-    arcpy.Append_management("FC_Layer",dst,"NO_TEST","#","#")
-    arcpy.CalculateField_management(dst, loaded,"datetime.datetime.now( )","PYTHON_9.3","#")
+    MakeTableView_management(source, 'FCtbl', "#", "#", "")
+    MakeXYEventLayer_management("FCtbl",Long, Lat,"FC_Layer", GCS,"#")
+    TruncateTable_management(dst)
+    Append_management("FC_Layer",dst,"NO_TEST","#","#")
+    CalculateField_management(dst, loaded,"datetime.datetime.now( )","PYTHON_9.3","#")
     print "XYFC complete for " +str(dst)+ " at " + str(datetime.datetime.now())
 
 ############################################################################
@@ -42,7 +44,7 @@ def XYFC(source, dst, Lat, Long, GCS, loaded):
 
 class CIIMSDev(object):
     srcdb =r'sdedev_ciims.sde'
-    if arcpy.Exists(r'Database Connections/'+srcdb):
+    if Exists(r'Database Connections/'+srcdb):
         pass 
     else:
         shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
@@ -53,7 +55,7 @@ class CIIMSDev(object):
     Long = "CROSSINGLONGITUDE"
     loaded = "LOADDATE"
     dstdb = r'sdedev_ciims.sde'
-    if arcpy.Exists(r'Database Connections/'+dstdb):
+    if Exists(r'Database Connections/'+dstdb):
         pass
     else:
         shutil.copy(conns+"/"+dstdb, DCL+"/"+dstdb)
@@ -71,7 +73,7 @@ class CIIMSDev(object):
 
 class CIIMSProd(object):
     srcdb =r'sdeprod_CIIMS.sde'
-    if arcpy.Exists(r'Database Connections/'+srcdb):
+    if Exists(r'Database Connections/'+srcdb):
         pass 
     else:
         shutil.copy(conns+"/"+srcdb, DCL+"/"+srcdb)
@@ -82,7 +84,7 @@ class CIIMSProd(object):
     Long = "CROSSINGLONGITUDE"
     loaded = "LOADDATE"
     dstdb = r'sdeprod_CIIMS.sde'
-    if arcpy.Exists(r'Database Connections/'+dstdb):
+    if Exists(r'Database Connections/'+dstdb):
         pass
     else:
         shutil.copy(conns+"/"+dstdb, DCL+"/"+dstdb)
@@ -101,7 +103,7 @@ class CIIMSProd(object):
 class ACCESSPERMDev(object):
     print "access permit points: GO "+ str(datetime.datetime.now())
     srcdb =r'ATLASPROD.odc'
-    if arcpy.Exists(r'Database Connections/'+srcdb):
+    if Exists(r'Database Connections/'+srcdb):
         print srcdb +" exists"
         pass 
     else:
@@ -115,7 +117,7 @@ class ACCESSPERMDev(object):
     Long = "GPS_LONGITUDE"
     loaded = "LOAD_DATE"
     dstdb = 'GISTEST.sde'
-    if arcpy.Exists(r'Database Connections/'+dstdb):
+    if Exists(r'Database Connections/'+dstdb):
         print dstdb +" exists"
         pass
     else:
