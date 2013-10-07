@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
 
 import arcpy
-from ENV import ws, tempgdb, tempmdb, nowish
+from CONFIG import ws, tempgdb, tempmdb, nowish
 
 mxd = arcpy.mapping.MapDocument(r"\\GISDATA\ArcGIS\GISDATA\MXD\NewGISNetworkSeed91.mxd")
 arcpy.env.workspace = ws

@@ -14,18 +14,18 @@ class MyClass(object):
         '''
         Constructor
         '''
-import arcpy
+from arcpy import TableToGeodatabase_conversion,SearchCursor, TableToTable_conversion, TableToDomain_management
 
-from ENV import ws, tempgdb, tempmdb
+from CONFIG import ws, tempgdb, tempmdb
 
 wsouttbl = ws+"\\"+tempgdb
 wsindb = ws+"\\"+tempmdb
 
 fldName = 'IAL_DOMAIN'
 fcName = wsindb+"\NM3_NM_INV_ATTRI_LOOKUP_ALL"
-arcpy.TableToGeodatabase_conversion("Database Connections\ATLASPROD.odc\NM3.NM_INV_ATTRI_LOOKUP_ALL", wsindb) #change the DBConnection to use ENV class variable
+TableToGeodatabase_conversion("Database Connections\ATLASPROD.odc\NM3.NM_INV_ATTRI_LOOKUP_ALL", wsindb) #change the DBConnection to use ENV class variable
 print wsouttbl
-myList = set([row.getValue(fldName) for row in arcpy.SearchCursor(fcName, fields=fldName)]) 
+myList = set([row.getValue(fldName) for row in SearchCursor(fcName, fields=fldName)]) 
 print myList
 
 for attrib in myList:
@@ -35,6 +35,6 @@ for attrib in myList:
     outname = outname.replace("-", "_")
     print outname
     print '"""'+fldName+'"'+" = '"+ attrib+"'"+'""'
-    arcpy.TableToTable_conversion(fcName,wsindb,outname,sels)
-    arcpy.TableToDomain_management(wsindb+"/"+outname,"IAL_VALUE","IAL_MEANING",wsouttbl, outname, attrib, "REPLACE")
+    TableToTable_conversion(fcName,wsindb,outname,sels)
+    TableToDomain_management(wsindb+"/"+outname,"IAL_VALUE","IAL_MEANING",wsouttbl, outname, attrib, "REPLACE")
 print "All Cansys Domains copied to temp mdb as coded text values"        

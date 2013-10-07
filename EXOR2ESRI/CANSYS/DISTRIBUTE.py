@@ -7,26 +7,26 @@ Created on Aug 20, 2013
 if __name__ == '__main__':
     pass
 
-import arcpy
-from ENV import ws, tempgdb
+from arcpy import Exists, DeleteFeatures_management, Append_management, FeatureClassToFeatureClass_conversion, AddField_management, CalculateField_management, DisconnectUser
+from CONFIG import ws, tempgdb 
    
 def copyfromstaged(lyrlist, admin, fdset, fcoutpath):
     for lyr in lyrlist:
         print (fcoutpath+admin+'.'+lyr)
-        if arcpy.Exists(fcoutpath+admin+'.'+lyr):
-            arcpy.DeleteFeatures_management(fcoutpath+admin+'.'+ lyr)
-            arcpy.Append_management(ws+"/"+tempgdb+'/'+lyr ,fcoutpath+admin+'.'+lyr,"NO_TEST","#")
+        if Exists(fcoutpath+admin+'.'+lyr):
+            DeleteFeatures_management(fcoutpath+admin+'.'+ lyr)
+            Append_management(ws+"/"+tempgdb+'/'+lyr ,fcoutpath+admin+'.'+lyr,"NO_TEST","#")
             print "updated "+lyr+" in " + fcoutpath
         else:
-            arcpy.FeatureClassToFeatureClass_conversion(ws+"/"+tempgdb+'/'+lyr, fcoutpath, lyr)
+            FeatureClassToFeatureClass_conversion(ws+"/"+tempgdb+'/'+lyr, fcoutpath, lyr)
             print "copied new "+lyr+" feature class to " + fcoutpath
             print " Check roles and privleges on this "+lyr +" at "+fcoutpath
         try:
-            arcpy.CalculateField_management(fcoutpath+admin+'.'+lyr,"NETWORKDATE","datetime.datetime.now( )","PYTHON_9.3","#")
+            CalculateField_management(fcoutpath+admin+'.'+lyr,"NETWORKDATE","datetime.datetime.now( )","PYTHON_9.3","#")
             print "copy date field updated"
         except:
-            arcpy.AddField_management(fcoutpath+admin+'.'+lyr, "NETWORKDATE", "DATE" )
-            arcpy.CalculateField_management(fcoutpath+admin+'.'+lyr,"NETWORKDATE","datetime.datetime.now( )","PYTHON_9.3","#")
+            AddField_management(fcoutpath+admin+'.'+lyr, "NETWORKDATE", "DATE" )
+            CalculateField_management(fcoutpath+admin+'.'+lyr,"NETWORKDATE","datetime.datetime.now( )","PYTHON_9.3","#")
             print "copy date field added and updated"
             pass
     return
@@ -56,7 +56,7 @@ class SDEPROD_ROADWAY:
     sdedev = r'Database Connections/SDEPROD_GIS.sde/' #destination DB connection
     admin = 'GIS'
     sys = 'Database Connections\SDEDEV_SDE.sde'
-    arcpy.DisconnectUser(sys, "All")
+    DisconnectUser(sys, "All")
     fdset = r'KDOT_ROADWAY/'  #Destination DB feature Class
     fcoutpath = sdedev+admin+'.'+fdset
     print fcoutpath
@@ -69,7 +69,7 @@ class SDEPROD_CANSYS:
     fdset = r'CANSYS/'
     admin = 'GIS'
     sys = 'Database Connections\SDEDEV_SDE.sde'
-    arcpy.DisconnectUser(sys, "All")
+    DisconnectUser(sys, "All")
     fcoutpath = sdedev+admin+'.'+fdset
     fcoutpath
     copyfromstaged (lyrlist, admin, fdset, fcoutpath)
