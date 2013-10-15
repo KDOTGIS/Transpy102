@@ -18,7 +18,7 @@ class MyClass(object):
         '''
         
         
-from arcpy import mapping, env, MakeFeatureLayer_management, FeatureClassToGeodatabase_conversion, CreateRoutes_lr, CalibrateRoutes_lr, AddField_management, CalculateField_management, Append_management
+from arcpy import mapping, env, SimplifyLine_cartography, MakeFeatureLayer_management, FeatureClassToGeodatabase_conversion, CreateRoutes_lr, CalibrateRoutes_lr, AddField_management, CalculateField_management, Append_management
 
 
 mxd = mapping.MapDocument(r"\\GISDATA\ArcGIS\GISDATA\MXD\StateSysLaneCalib.mxd")
@@ -39,7 +39,7 @@ print routelyr
 print pathloc
 print inlyr
 
-#arcpy.SimplifyLine_cartography(gisprod+"/SHARED.STATE_SYSTEM_LANE",routelyr,"POINT_REMOVE","1 Meters","RESOLVE_ERRORS","KEEP_COLLAPSED_POINTS","CHECK")
+SimplifyLine_cartography(gisprod+"/SHARED.STATE_SYSTEM_LANE",routelyr,"POINT_REMOVE","1 Meters","RESOLVE_ERRORS","KEEP_COLLAPSED_POINTS","CHECK")
 MakeFeatureLayer_management(inlyr,route+"_Primary",""""DIRECTION"<4""","#","#")
 MakeFeatureLayer_management(inlyr,route+"_Secondary",""""DIRECTION">4""","#","#")
 FeatureClassToGeodatabase_conversion("STATE_SYSTEM_LANE_Primary",pathloc)
