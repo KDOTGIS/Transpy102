@@ -11,7 +11,7 @@ from config import ws, connection0, connection1, citylimits, stateroutelyr, cnty
 from arcpy import mapping, env, Exists, AddJoin_management, RemoveJoin_management, Delete_management, CalibrateRoutes_lr, DeleteIdentical_management, FeatureClassToFeatureClass_conversion, FeatureVerticesToPoints_management, MakeFeatureLayer_management, Intersect_analysis, CreateRoutes_lr, MakeTableView_management, Dissolve_management, AddField_management, CalculateField_management, LocateFeaturesAlongRoutes_lr, MakeRouteEventLayer_lr, OverlayRouteEvents_lr
 env.workspace = ws
 env.overwriteOutput = True
-#mxd = mapping.MapDocument(r"\\gisdata\arcgis\gisdata\MXD\2013100901_CCLProcess.mxd")
+mxd = mapping.MapDocument(r"\\gisdata\arcgis\gisdata\MXD\2013100901_CCLProcess.mxd")
 MakeTableView_management(connection1+"Maint_Segment", "Maint_tview")
 MakeTableView_management(connection1+"CCL_Resolution", "CCL_Resolution_tbl")
 CalculateField_management("CCL_Resolution_tbl", "CCL_LRS",  'str(!CITYNUMBER!)+str(!LRS_KEY![3:14])', "PYTHON" )
