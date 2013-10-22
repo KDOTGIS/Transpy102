@@ -31,6 +31,11 @@ laneclass = r"\\gisdata\arcgis\GISdata\KDOT\BTP\CANSYSTEST\CANSYSNet2013_10_7.gd
 #SET THE LOCATION OF THE "INTERCHANGE" POINT FEATURE CLASS EXTRACTED FROM CANSYS
 interchange = r"\\gisdata\arcgis\GISdata\KDOT\BTP\CANSYSTEST\CANSYSNet2013_10_7.gdb\INTR"
 
-#NON STATE SYSTEM GIS LAYER
-nonstate = "Database Connections\GISPROD.sde\SHARED.NON_STATE_SYSTEM"
+#NON STATE SYSTEM GIS LAYER  ### Nonstate layer in GISPROD will not work in ArcGIS until geodatabase is updated
+nonstate = r"Database Connections\SDEDEV_GIS_DEV.sde\GIS_DEV.KDOT_ROADWAY_WORKSPACE\GIS_DEV.NON_STATE_SYSTEM"
 
+#MAINTNENACE EVENT TABLE
+maintenance = r"Database Connections\SQL61_GEOADMIN_CCL.sde\CCL.DBO.Maint_Segment"
+
+#RESOULTION EVENT TABLE
+resolve = connection1+"CCL_Resolution"

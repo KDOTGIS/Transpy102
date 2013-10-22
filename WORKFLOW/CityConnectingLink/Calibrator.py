@@ -4,30 +4,32 @@ Created on Oct 10, 2013
 @author: kyleg
 '''
 
-class Calibrator(object):
-    '''
-    classdocs
-    '''
+from arcpy import CalibrateRoutes_lr, DeleteIdentical_management, FeatureClassToFeatureClass_conversion, FeatureVerticesToPoints_management, CreateRoutes_lr, MakeTableView_management, AddField_management, CalculateField_management, LocateFeaturesAlongRoutes_lr, MakeRouteEventLayer_lr 
+from config import connection0, connection1, stateroutelyr
+'''    
+LineFeatureClass = connection1+"CITY_CONNECTING_LINK_STATE"
+ReferenceRoute = stateroutelyr
+ReferenceRouteKey = "LRS_ROUTE"
+NewRouteKey = "CCL_LRS"
+NewBeg = "CCL_BEGIN"
+NewEnd = "CCL_END"
+NewRoute = "CCL_LRS_ROUTE"
+'''
 
-
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        LineFeatureClass = "SRND"
-        BeginFieldName = "BeginStateMP"
-        EndFieldName = "EndStateMP"
-        OutFeatureClass = "StateLRS"
- 
-        
-        def LRS_PointCalibrator(LineFeatureClass,BeginFieldName, EndFieldName, RouteKeyField, OutFeatureClass):
-            from arcpy import CalculateField_management, LocateFeaturesAlongRoutes_lr, MakeTableView_management, MakeRouteEventLayer_lr, FeatureClassToFeatureClass_conversion, DeleteIdentical_management,CreateRoutes_lr,AddField_management
-            LocateFeaturesAlongRoutes_lr(LineFeatureClass,ws+"\\"+tempgdb+"/SRND","NE_UNIQUE","0.001 Feet",ws+"\\"+tempgdb+"/CP_SRND","STATE_MILE POINT SR_MEAS","ALL","DISTANCE","ZERO","FIELDS","M_DIRECTON")
-            MakeTableView_management(ws+"\\"+tempgdb+"/CP_SRND","Calibration_SR",'"STATE_MILE" = "SRND"', ws+"\\"+tempgdb,"#")
-            MakeRouteEventLayer_lr(routelyr,"NE_UNIQUE","Calibration_SR","STATE_MILE POINT SR_MEAS","SR_Calibration_Events","#","ERROR_FIELD","NO_ANGLE_FIELD","NORMAL","ANGLE","LEFT","POINT")
-            FeatureClassToFeatureClass_conversion("SR_Calibration_Events",ws+"\\"+tempgdb,"Calibration_Points_SRND","#","#")
-            DeleteIdentical_management(ws+"\\"+tempgdb+"/Calibration_Points_SRND","STATE_MILE;SR_MEAS","0.002 Miles","0")
-            CreateRoutes_lr(ws+"\\"+tempgdb+"/State_System","LRS_ROUTE",ws+"\\"+tempgdb+"/StateSystem_State_Route_SRND","TWO_FIELDS","BEG_STATE_LOGMILE","END_STATE_LOGMILE","UPPER_LEFT","1","0","IGNORE","INDEX")
-            CalibrateRoutes_lr(ws+"\\"+tempgdb+"/StateSystem_State_Route_"+route,"LRS_ROUTE",ws+"\\"+tempgdb+"/Calibration_Points_SRND","LRS_ROUTE","SR_MEAS",ws+"\\"+tempgdb+"/SMLRS","MEASURES","5 feet","BETWEEN","BEFORE","AFTER","IGNORE","KEEP","INDEX")
-            AddField_management(ws+"\\"+tempgdb+"/SMLRS", "NETWORKDATE", "DATE")
-            CalculateField_management(ws+"\\"+tempgdb+"/SMLRS","NETWORKDATE","datetime.datetime.now( )","PYTHON_9.3","#")
+def LRS_PointCalibrator(LineFeatureClass, ReferenceRoute, ReferenceRouteKey,NewRouteKey, NewRoute, NewBeg, NewEnd):
+    FeatureVerticesToPoints_management(LineFeatureClass, connection1+"CALIBRATION_POINTS", "ALL")
+    LocateFeaturesAlongRoutes_lr(connection1+"CALIBRATION_POINTS", ReferenceRoute,ReferenceRouteKey,"0.001 Feet",connection1+"CP_MEAS","RefKey POINT MEASURE","ALL","DISTANCE","ZERO","FIELDS","M_DIRECTON")
+    querystr = str("RefKey = "+ReferenceRouteKey)
+    print querystr
+    MakeTableView_management(connection1+"CP_MEAS","CalibrationEvents", querystr, "#")
+    delfields = NewRouteKey+";MEASURE"
+    DeleteIdentical_management("CalibrationEvents", delfields)
+    inprops = str(ReferenceRouteKey +" POINT MEASURE")
+    MakeRouteEventLayer_lr(ReferenceRoute, ReferenceRouteKey, "CalibrationEvents",inprops,"Calibration_Event_lyr","#","ERROR_FIELD","NO_ANGLE_FIELD","NORMAL","ANGLE","LEFT","POINT")
+    FeatureClassToFeatureClass_conversion("Calibration_Event_lyr",connection0,"Calibration_Points"+NewRoute,"#","#")
+    CreateRoutes_lr(LineFeatureClass,NewRouteKey,connection1+NewRoute+"base","TWO_FIELDS",NewBeg, NewEnd,"UPPER_LEFT","1","0","IGNORE","INDEX")
+    calxpr = '[MEASURE]- [MIN_BEG_STATE_LOGMILE]'
+    CalculateField_management(connection1+"Calibration_Points"+NewRoute, "MEASURE", calxpr, "VB", "#")
+    CalibrateRoutes_lr(connection1+NewRoute+"base", NewRouteKey,connection1+"Calibration_Points"+NewRoute,NewRouteKey,"MEASURE",connection1+NewRoute,"MEASURES","5 feet","BETWEEN","BEFORE","AFTER","IGNORE","KEEP","INDEX")
+    AddField_management(connection1+NewRoute, "NETWORKDATE", "DATE")
+    CalculateField_management(connection1+NewRoute,"NETWORKDATE","datetime.datetime.now( )","PYTHON_9.3","#")
