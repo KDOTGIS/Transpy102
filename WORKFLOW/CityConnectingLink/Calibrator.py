@@ -20,7 +20,6 @@ def LRS_PointCalibrator(LineFeatureClass, ReferenceRoute, ReferenceRouteKey,NewR
     FeatureVerticesToPoints_management(LineFeatureClass, connection1+"CALIBRATION_POINTS", "ALL")
     LocateFeaturesAlongRoutes_lr(connection1+"CALIBRATION_POINTS", ReferenceRoute,ReferenceRouteKey,"0.001 Feet",connection1+"CP_MEAS","RefKey POINT MEASURE","ALL","DISTANCE","ZERO","FIELDS","M_DIRECTON")
     querystr = str("RefKey = "+ReferenceRouteKey)
-    print querystr
     MakeTableView_management(connection1+"CP_MEAS","CalibrationEvents", querystr, "#")
     delfields = NewRouteKey+";MEASURE"
     DeleteIdentical_management("CalibrationEvents", delfields)
