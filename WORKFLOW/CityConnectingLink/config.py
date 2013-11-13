@@ -39,3 +39,11 @@ maintenance = r"Database Connections\SQL61_GEOADMIN_CCL.sde\CCL.DBO.Maint_Segmen
 
 #RESOULTION EVENT TABLE
 resolve = connection1+"CCL_Resolution"
+
+LineFeatureClass = connection1+"CITY_CONNECTING_LINK_STATE"
+ReferenceRoute = stateroutelyr
+ReferenceRouteKey = "LRS_ROUTE"
+NewRouteKey = "CCL_LRS"
+NewBeg = "CCL_BEGIN"
+NewEnd = "CCL_END"
+NewRoute = "CCL_LRS_ROUTE"
