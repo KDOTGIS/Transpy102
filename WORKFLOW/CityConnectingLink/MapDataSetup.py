@@ -11,7 +11,7 @@ try:
 except:
     pass
 
-from arcpy import env, CreateRoutes_lr, CalibrateRoutes_lr, DeleteIdentical_management, FeatureVerticesToPoints_management, Exists, AddJoin_management, RemoveJoin_management, Delete_management, FeatureClassToFeatureClass_conversion, MakeFeatureLayer_management, MakeTableView_management, Dissolve_management, AddField_management, CalculateField_management, LocateFeaturesAlongRoutes_lr, MakeRouteEventLayer_lr, OverlayRouteEvents_lr
+from arcpy import env, DissolveRouteEvents_lr, DeleteRows_management, CreateRoutes_lr, CalibrateRoutes_lr, DeleteIdentical_management, FeatureVerticesToPoints_management, Exists, AddJoin_management, RemoveJoin_management, Delete_management, FeatureClassToFeatureClass_conversion, MakeFeatureLayer_management, MakeTableView_management, Dissolve_management, AddField_management, CalculateField_management, LocateFeaturesAlongRoutes_lr, MakeRouteEventLayer_lr, OverlayRouteEvents_lr
 
 import datetime
 print "run at "+ str(datetime.datetime.now())
@@ -21,7 +21,8 @@ env.overwriteOutput = True
 env.MResolution = 0.0001
 env.MTolerance = 0.0002 
 
-MakeTableView_management(resolve, "CCL_Resolution_tbl")
+rsel = "ENDDATE IS NULL"
+MakeTableView_management(resolve, "CCL_Resolution_tbl", rsel)
 CalculateField_management("CCL_Resolution_tbl", "CCL_LRS",  'str(!CITYNUMBER!)+str(!LRS_KEY![3:14])', "PYTHON" )
 MakeTableView_management(connection1+"CCL_Resolution", "CCL_Resolution_tbl10", 'CITYNUMBER<100')
 CalculateField_management("CCL_Resolution_tbl10", "CCL_LRS", '"0"+str(!CITYNUMBER!)+str(!LRS_KEY![3:14])', "PYTHON")
@@ -95,17 +96,31 @@ LocateFeaturesAlongRoutes_lr("Maintenance_Events_CNTY",connection1+"CCL_LRS_ROUT
 print "show lane classification referenced to city connecting link LRS"
 
 MakeFeatureLayer_management(laneclass, 'LNCL')
+#LANE CLASS LOOKUPS 
 LocateFeaturesAlongRoutes_lr("LNCL",connection1+"CCL_LRS_ROUTE",NewRouteKey,"#",connection1+"LANECLASS_CCL","CCL_LRS LINE CCL_BEGIN CCL_END","ALL","DISTANCE","ZERO","FIELDS","M_DIRECTON")
-OverlayRouteEvents_lr(connection1+"MAINTENANCE_CCL","CCL_LRS LINE CCL_BEGIN CCL_END",connection1+"LANECLASS_CCL","CCL_LRS LINE CCL_BEGIN CCL_END","UNION",connection1+"CCL_Report","CCL_LRS LINE CCL_BEGIN CCL_END","NO_ZERO","FIELDS","INDEX")
+AddField_management(connection1+"LANECLASS_CCL", "Lanes", "LONG")
+MakeTableView_management(connection1+"LANECLASS_CCL", "LANES_LUT")
+AddJoin_management("LANES_LUT", "LNCL_CLS_ID", connection1+"LC_LN_CLS_ID", "IAL_VALUE")
+CalculateField_management("LANES_LUT","CCL.DBO.LANECLASS_CCL.Lanes", 'Left([CCL.DBO.LC_LN_CLS_ID.IAL_MEANING],1)', "VB" )
+RemoveJoin_management("LANES_LUT", "CCL.DBO."+"LC_LN_CLS_ID")
+OverlayRouteEvents_lr(connection1+"MAINTENANCE_CCL","CCL_LRS LINE CCL_BEGIN CCL_END",connection1+"LANECLASS_CCL","CCL_LRS LINE CCL_BEGIN CCL_END","UNION",connection1+"CCL_Report_M","CCL_LRS LINE CCL_MA_BEGIN CCL_MA_END","NO_ZERO","FIELDS","INDEX")
+
+DissolveRouteEvents_lr(connection1+"CCL_Report_M","CCL_LRS LINE CCL_MA_BEGIN CCL_MA_END","CITYNO;MAINT_DESC;CITY_NAME;Lanes",connection1+"CCL_Report_D","CCL_LRS LINE CCL_MA_BEGIN CCL_MA_END","CONCATENATE","INDEX")
+#cleanup border errors - make feature layers based on City, city number, and CCLLRS and delete where they are not consistent between Maintenance and Resolution sections
+MakeTableView_management(connection1+"CCL_Report", "Report_Clean1", "CCL_LRS2 <> CCL_LRS")
+DeleteRows_management("Report_Clean1")
+
+LocateFeaturesAlongRoutes_lr(LineFeatureClass, connection1+"CCL_LRS_ROUTE",NewRouteKey,"#",connection1+"RES_SECTION_CCL","CCL_LRS LINE CCL_BEGIN CCL_END","ALL","DISTANCE","ZERO","FIELDS","M_DIRECTON")
+
+OverlayRouteEvents_lr(connection1+"RES_SECTION_CCL","CCL_LRS LINE CCL_BEGIN CCL_END",connection1+"CCL_Report_D","CCL_LRS LINE CCL_MA_BEGIN CCL_MA_END","UNION",connection1+"CCL_Report","CCL_LRS LINE CCL_BEGIN CCL_END","NO_ZERO","FIELDS","INDEX")
+
+
 MakeRouteEventLayer_lr(connection1+"CCL_LRS_ROUTE", "CCL_LRS",connection1+"CCL_Report","CCL_LRS LINE CCL_BEGIN CCL_END","City Connecting Links Mapping","#","ERROR_FIELD","NO_ANGLE_FIELD","NORMAL","ANGLE","LEFT","POINT")
+
 
 print "add mapping fields for lane miles"
 AddField_management("City Connecting Links Mapping", "CenterlineMiles", "DOUBLE")
 CalculateField_management("City Connecting Links Mapping","CenterlineMiles", '[CCL_END]-[CCL_BEGIN]', "VB" )
-AddField_management("City Connecting Links Mapping", "Lanes", "LONG")
-AddJoin_management("City Connecting Links Mapping", "LNCL_CLS_ID", connection1+"LC_LN_CLS_ID", "IAL_VALUE")
-CalculateField_management("City Connecting Links Mapping","CCL.DBO.CCL_Report_Features.Lanes", 'Left([CCL.DBO.LC_LN_CLS_ID.IAL_MEANING],1)', "VB" )
-RemoveJoin_management("City Connecting Links Mapping", "CCL.DBO."+"LC_LN_CLS_ID")
 AddField_management("City Connecting Links Mapping", "LaneMiles", "DOUBLE")
 CalculateField_management("City Connecting Links Mapping","LaneMiles", '([CCL_END]-[CCL_BEGIN])*[Lanes]', "VB" )
 AddField_management(connection1+"CITY_CONNECTING_LINK_CENTERLINE", "CenterlineMiles", "DOUBLE")
@@ -116,5 +131,7 @@ AddField_management(connection1+"CCL_LEGEND", "CCL_LEGEND", "TEXT", "#", "#", "5
 legendexp = 'str(!CCL_LRS![3]) +"-" + str(!CCL_LRS![6:9]).lstrip("0")+"........"+ str(!SUM_CenterlineMiles!)'
 MakeFeatureLayer_management(connection1+"CCL_LEGEND", 'LegendCalc')
 CalculateField_management("LegendCalc","CCL_LEGEND",legendexp,"PYTHON_9.3","#")
+
+
 
 print "ended at "+ str(datetime.datetime.now())
