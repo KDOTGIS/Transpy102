@@ -114,9 +114,7 @@ LocateFeaturesAlongRoutes_lr(LineFeatureClass, connection1+"CCL_LRS_ROUTE",NewRo
 
 OverlayRouteEvents_lr(connection1+"RES_SECTION_CCL","CCL_LRS LINE CCL_BEGIN CCL_END",connection1+"CCL_Report_D","CCL_LRS LINE CCL_MA_BEGIN CCL_MA_END","UNION",connection1+"CCL_Report","CCL_LRS LINE CCL_BEGIN CCL_END","NO_ZERO","FIELDS","INDEX")
 
-
 MakeRouteEventLayer_lr(connection1+"CCL_LRS_ROUTE", "CCL_LRS",connection1+"CCL_Report","CCL_LRS LINE CCL_BEGIN CCL_END","City Connecting Links Mapping","#","ERROR_FIELD","NO_ANGLE_FIELD","NORMAL","ANGLE","LEFT","POINT")
-
 
 print "add mapping fields for lane miles"
 AddField_management("City Connecting Links Mapping", "CenterlineMiles", "DOUBLE")
@@ -131,7 +129,5 @@ AddField_management(connection1+"CCL_LEGEND", "CCL_LEGEND", "TEXT", "#", "#", "5
 legendexp = 'str(!CCL_LRS![3]) +"-" + str(!CCL_LRS![6:9]).lstrip("0")+"........"+ str(!SUM_CenterlineMiles!)'
 MakeFeatureLayer_management(connection1+"CCL_LEGEND", 'LegendCalc')
 CalculateField_management("LegendCalc","CCL_LEGEND",legendexp,"PYTHON_9.3","#")
-
-
 
 print "ended at "+ str(datetime.datetime.now())
