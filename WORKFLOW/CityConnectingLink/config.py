@@ -20,16 +20,16 @@ connection1 =  connection0+'/'+schema
 citylimits = r'Database Connections\SDEDEV_GIS_DEV.sde\GIS_DEV.Administrative_Boundary\GIS_DEV.CITY_LIMITS'
 
 #SET THE GIS STATE SYSTEM COUNTY LRS ROUTE LAYER FOR LINEAR REFERENCE
-cntyroutelyr = r'Database Connections\SDEDEV_GIS_DEV.sde\GIS_DEV.KDOT_ROADWAY\GIS_DEV.CMLRS'
+cntyroutelyr = r'Database Connections\SQL61_GIS_CANSYS_RO.sde\GIS_CANSYS.DBO.CMLRS'
 
 #SET THE GIS STATE SYSTEM STATE LRS ROUTE LAYER FOR LINEAR REFERENCE
-stateroutelyr = r'Database Connections\SDEDEV_GIS_DEV.sde\GIS_DEV.KDOT_ROADWAY\GIS_DEV.SMLRS'
+stateroutelyr = r'Database Connections\SQL61_GIS_CANSYS_RO.sde\GIS_CANSYS.DBO.SMLRS'
 
 #SET THE LOCATION OF THE "LANE CLASS" POLYLINE FEATURE CLASS EXTRACTED FROM CANSYS
-laneclass = r"\\gisdata\arcgis\GISdata\KDOT\BTP\CANSYSTEST\CANSYSNet2013_10_7.gdb\LNCL"
+laneclass = r"Database Connections\SQL61_GIS_CANSYS_RO.sde\GIS_CANSYS.DBO.V_LNCL_SDO_V"
 
 #SET THE LOCATION OF THE "INTERCHANGE" POINT FEATURE CLASS EXTRACTED FROM CANSYS
-interchange = r"\\gisdata\arcgis\GISdata\KDOT\BTP\CANSYSTEST\CANSYSNet2013_10_7.gdb\INTR"
+interchange = r"Database Connections\SQL61_GIS_CANSYS_RO.sde\GIS_CANSYS.DBO.V_INTR_SDO_V"
 
 #NON STATE SYSTEM GIS LAYER  ### Nonstate layer in GISPROD will not work in ArcGIS until geodatabase is updated
 nonstate = r"Database Connections\SDEDEV_GIS_DEV.sde\GIS_DEV.KDOT_ROADWAY_WORKSPACE\GIS_DEV.NON_STATE_SYSTEM"
