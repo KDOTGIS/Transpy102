@@ -3,14 +3,38 @@ Created on Jul 23, 2014
 
 @author: kyleg
 '''
-import ntpath
-import arcpy
+import ntpath, arcpy, re
 try:
-    from config import wspath, reviewpath, KdotRd, kdotdb, Kdotdbfp
+    from config import wspath, reviewpath, KdotRd, Kdotdbfp, final
 except:
     print "copy config to command line"
-    
-import re
+
+
+#set the workspace from the config file
+arcpy.env.workspace = wspath
+arcpy.env.overwriteOutput=1
+gdb = arcpy.ListWorkspaces('*.gdb')
+ng911 = gdb[0]
+print ng911
+arcpy.env.workspace = ng911
+datasets = arcpy.ListDatasets()
+tables = arcpy.ListTables()
+fd = datasets[0]
+fcs = arcpy.ListFeatureClasses("", "", fd)
+checkfile = reviewpath+"/"+ntpath.basename(ng911)
+topo= fd+"/NG911_Topology"
+arcpy.Compact_management(ng911)
+
+def replaceExistingCheck():
+    if arcpy.Exists(checkfile):
+        print "file already exists, replacing the existing file"
+        arcpy.Delete_management(checkfile)
+        arcpy.Copy_management(ng911, checkfile)
+        pass
+    else:
+        arcpy.Copy_management(ng911, checkfile)
+
+
 """
 This module encodes a string using Soundex, as described by
 http://en.wikipedia.org/w/index.php?title=Soundex&oldid=466065377
@@ -26,8 +50,6 @@ charsubs = {'B': '1', 'F': '1', 'P': '1', 'V': '1',
             'Q': '2', 'S': '2', 'X': '2', 'Z': '2',
             'D': '3', 'T': '3', 'L': '4', 'M': '5',
             'N': '5', 'R': '6'}
-
-#numlist = ['1','2','3','4','5','6','7','8','9','0']
 
 def normalize(s):
     """ Returns a copy of s without invalid chars and repeated letters. """
@@ -66,6 +88,8 @@ def soundex(s):
         enc += '0'
     return enc
 
+
+#this module applies soundex to named streets, and pads the numbered streets with zeros, keeping the numbering system intact
 def numdex(s):
     if s[0] in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
         numerical_re = re.compile("[A-Z]|[^0-9][^0-9][^0-9][^0-9]")
@@ -73,32 +97,7 @@ def numdex(s):
         return s.zfill(4)
     else:
         return soundex(s)
-    
-
-#set the workspace from the config file
-arcpy.env.workspace = wspath
-arcpy.env.overwriteOutput=1
-gdb = arcpy.ListWorkspaces('*.gdb')
-
-ng911 = gdb[0]
-arcpy.env.workspace = ng911
-datasets = arcpy.ListDatasets()
-tables = arcpy.ListTables()
-fd = datasets[0]
-fcs = arcpy.ListFeatureClasses("", "", fd)
-checkfile = reviewpath+"/"+ntpath.basename(ng911)
-topo= fd+"/NG911_Topology"
-arcpy.Compact_management(ng911)
-if arcpy.Exists(checkfile):
-    print "file already exists, replacing the existing file"
-    arcpy.Delete_management(checkfile)
-    arcpy.Copy_management(ng911, checkfile)
-    pass
-else:
-    arcpy.Copy_management(ng911, checkfile)
-    
-#arcpy.CreateTable_management(checkfile, "CheckTable", KdotRd+"/CheckTable")
-   
+#this module gives elementary information about geodata, including # of rows
 def Inventory():
     arcpy.env.workspace = ng911
     print "Geodatabase Name"
@@ -122,7 +121,7 @@ def Inventory():
             print("              IsUnique    : {0}".format(index.isUnique))
             
             
-#check tolology             
+#check tolology rules for errors and report on topology settings - just use data reviewer instead
 def TopologyCheck():
     path = checkfile
     print path
@@ -134,7 +133,7 @@ def TopologyCheck():
     print "%-27s %s" % ("FeatureClassNames:", desc.featureClassNames)
     print "%-27s %s" % ("MaximumGeneratedErrorCount:", desc.maximumGeneratedErrorCount)
 
-#basic geometry check for issues that would cause errors in loading to SIF
+#basic geometry check for issues that would cause errors in loading to SIF - just use data reviewer instead
 def GeometryCheck():
 
     outreport = checkfile+"/GeomCheck"
@@ -155,6 +154,7 @@ def GeometryCheck():
         print ("See " + outrep + " for full details")
 
 #not checking all the fields - just checking address points and road centerlines for duplicates on the Segment ID and Address ID that are supposed to be unique 
+#Just use data viewer instead
 def Uniquity():
     rcl = ng911+r"/RoadCenterline"
     apt = ng911+r"/AddressPoints"
@@ -179,7 +179,7 @@ def StreetNetworkCheck():
     StreetLogfile = reviewpath+"/KDOTReview/"+ntpath.basename(ng911)+".log"
     arcpy.VerifyAndRepairGeometricNetworkConnectivity_management(geonet, StreetLogfile, "VERIFY_ONLY", "EXHAUSTIVE_CHECK", "0, 0, 10000000, 10000000")
     
-#creates an LRS network for the street centerlines, transfers the HPMS key field from the KDOT roads, then dissolves attributes to LRS events along the routes
+#Prepares Street centerlines for LRS, detects changes and transfers the HPMS key field from the KDOT roads
 def LRSify():
     arcpy.MakeFeatureLayer_management(checkfile+"/AuthoritativeBoundary","AuthoritativeBoundary_Layer","#","#","#")
     arcpy.MakeFeatureLayer_management(checkfile+"/CountyBoundary","CountyBoundary_Layer","#","#","#")
@@ -198,41 +198,44 @@ def LRSify():
     arcpy.AddField_management(checkfile+"/RoadCenterline", "KDOT_COUNTY", "TEXT")
     arcpy.AddField_management(checkfile+"/RoadCenterline", "KDOT_URBAN", "TEXT")
     arcpy.AddField_management(checkfile+"/RoadCenterline", "Soundex", "TEXT")
+    arcpy.AddField_management(checkfile+"/RoadCenterline", "KDOT_Surface", "TEXT")
+    arcpy.AddField_management(checkfile+"/RoadCenterline", "KDOT_START_DATE", "DATE")
+    arcpy.AddField_management(checkfile+"/RoadCenterline", "KDOT_END_DATE", "DATE")   
     arcpy.AddField_management("RoadCenterline", "SuffCode", "TEXT")
     arcpy.AddField_management("RoadCenterline", "UniqueNo", "TEXT")
     arcpy.CalculateField_management("RoadCenterline","KDOT_COUNTY","!ROUTE_ID![:3]","PYTHON_9.3","#")
+    arcpy.CalculateField_management("RoadCenterline","KDOT_START_DATE","1/1/1901","PYTHON_9.3","#")
     arcpy.CalculateField_management("RoadCenterline","KDOT_ADMO","!ROUTE_ID![3]","PYTHON_9.3","#")
     arcpy.CalculateField_management("RoadCenterline","PREDIR","0","PYTHON_9.3","#")
-    
+    # codify the road prefix direction for LRS
     arcpy.MakeTableView_management(Kdotdbfp+"\NG911_RdDir", "NG911_RdDir")
     arcpy.CalculateField_management("RoadCenterline","PREDIR","0","PYTHON_9.3","#")
     arcpy.AddJoin_management("RoadCenterline","PRD","NG911_RdDir", "RoadDir", "KEEP_COMMON")
     arcpy.CalculateField_management("RoadCenterline","PREDIR","!NG911_RdDir.RdDirCode!","PYTHON_9.3","#")
     arcpy.RemoveJoin_management("RoadCenterline")
-    
+    #Codify the Road Type for LRS
     arcpy.MakeTableView_management(Kdotdbfp+"\NG911_RdTypes", "NG911_RdTypes")
     arcpy.CalculateField_management("RoadCenterline","SuffCode","0","PYTHON_9.3","#")
     arcpy.AddJoin_management("RoadCenterline","STS","NG911_RdTypes", "RoadTypes", "KEEP_COMMON")
     arcpy.CalculateField_management("RoadCenterline","SuffCode","!NG911_RdTypes.LRS_CODE_TXT!","PYTHON_9.3","#")
     arcpy.RemoveJoin_management("RoadCenterline")    
-    
+    #Codify the County number for LRS (based on right side of street based on addressing direction)
     arcpy.MakeTableView_management(Kdotdbfp+"\NG911_County", "NG911_County")
     arcpy.AddJoin_management("RoadCenterline","COUNTY_R","NG911_County", "CountyName", "KEEP_COMMON")
     arcpy.CalculateField_management("RoadCenterline","KDOT_COUNTY","!NG911_County.CountyNumber!","PYTHON_9.3","#")
     arcpy.RemoveJoin_management("RoadCenterline") 
     
-        
+    #Codify the City Limit\city number for LRS
     arcpy.MakeTableView_management(Kdotdbfp+"\City_Limits", "City_Limits")
     arcpy.CalculateField_management("RoadCenterline","KDOT_URBAN","999","PYTHON_9.3","#")
     arcpy.AddJoin_management("RoadCenterline","MUNI_R","City_Limits", "CITY", "KEEP_COMMON")
     arcpy.CalculateField_management("RoadCenterline","KDOT_URBAN","!City_Limits.CITY_CD!.zfill(3)","PYTHON_9.3","#")
     arcpy.RemoveJoin_management("RoadCenterline")    
-  
-    #arcpy.AddJoin_management("CountyBoundary","COUNTY","NG911_County", "CountyName", "KEEP_COMMON")
-    #from soundexpy import numdex
+    #calculate what should be a nearly unique LRS Route key based on the decoding and street name soundex function
     arcpy.CalculateField_management("RoadCenterline","Soundex","numdex(!RD!)","PYTHON_9.3","#")
     arcpy.CalculateField_management("RoadCenterline","RouteName","str(!KDOT_COUNTY!)+str(!KDOT_URBAN!)+str(!PREDIR!) + !Soundex! + str(!SuffCode!)+!TRAVEL!","PYTHON_9.3","#")
     arcpy.MakeTableView_management(checkfile+"\RoadAlias", "RoadAlias")
+    #Pull out State Highways to preserve KDOT LRS Key (CANSYS FORMAT - non directional CRAD)
     arcpy.AddJoin_management("RoadCenterline","SEGID","RoadAlias", "SEGID")
     arcpy.SelectLayerByAttribute_management("RoadCenterline", "NEW_SELECTION", "RoadAlias.LABEL LIKE 'US %' OR RoadAlias.LABEL LIKE 'I %' OR RoadAlias.LABEL LIKE 'K %'" )
     arcpy.RemoveJoin_management("RoadCenterline")    
@@ -240,22 +243,35 @@ def LRSify():
     arcpy.SelectLayerByAttribute_management("RoadCenterline", "REMOVE_FROM_SELECTION", "TRAVEL is null" )
     arcpy.CalculateField_management("RoadCenterline","RouteName","!ROUTE_ID![:11]+!TRAVEL!","PYTHON_9.3","#")
     
-    #arcpy.MakeFeatureLayer_management("RoadCenterline","RoadCenterline_StateHwy","KDOT_ADMO in ('I', 'U', 'K')","#","#")
-    
+# makes the LRS route layer and dissolves the NG911 fields to LRS event tables
 def LRSIt():   
+    pass
+    
+def SIF_AdmTrack():
+    sif = arcpy.ListWorkspaces(final, "All")
+    print sif
+    tbls = arcpy.ListTables()
+    for tbl in tbls:
+        print tbl
+    fds = arcpy.ListDatasets()
+    for fd in fds:
+        print fd
+        fcs = arcpy.ListFeatureClasses(fd)
+        for fc in fcs:
+            print fc
     
      
     pass
     
     #arcpy.CalculateField_management("RoadCenterline_StateHwy","RouteName","!ROUTE_ID![3]+!ROUTE_ID![6:11]","PYTHON_9.3","#")
     
-    
- 
 if __name__ == '__main__':
     pass
-    Inventory()
-    TopologyCheck()
-    GeometryCheck()
-    Uniquity()
+    #Inventory()
+    replaceExistingCheck()
+    #TopologyCheck()
+    #GeometryCheck()
+    #Uniquity()
     StreetNetworkCheck()
     LRSify()
+    SIF_AdmTrack()
